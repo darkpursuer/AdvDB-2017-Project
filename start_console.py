@@ -10,7 +10,8 @@ from console import Console
 def main(argv):
   """
   Parse command line arguments\n
-  Start the main loop
+  Process preloaded file if there is one\n
+  Start the console
   """
   # read command line arguments
   infile = ""
