@@ -32,11 +32,8 @@ def main(argv):
   
   #initialize console
   console = Console()
-  # process infile
-  if infile:
-    console.process_file(infile)
   # start console
-  console.start()
+  console.start(infile)
     
 
 if __name__ == "__main__":

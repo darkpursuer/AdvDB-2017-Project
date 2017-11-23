@@ -32,7 +32,7 @@ class Console(object):
     """Initialize the object"""
     self.REGEX_LOAD_FILE = re.compile(r"load [^\s]+")
 
-  def process_line(self, line):
+  def _process_line(self, line):
     """
     Check if this line is valid and process it.
     """
@@ -45,12 +45,12 @@ class Console(object):
       sys.exit(0)
     elif self.REGEX_LOAD_FILE.match(stripped):
       filepath = stripped.split(" ")[1]
-      self.process_file(filepath)
+      self._process_file(filepath)
     else:
       # TODO let transaction manager to deal with it
       pass
 
-  def process_file(self, filepath):
+  def _process_file(self, filepath):
     """
     Load the file line by line and process each line\n
     - param:\n
@@ -59,20 +59,22 @@ class Console(object):
     try:
       with open(filepath) as f:
         for line in f:
-          self.process_line(line)
+          self._process_line(line)
     except FileNotFoundError as e:
       print(e)
 
-  def start(self):
+  def start(self, infile):
     """
     Start the main loop
     """
+    if infile:
+      self._process_file(infile)
     # start main loop
     sys.stdout.write("~> ")
     sys.stdout.flush()
     for line in sys.stdin:
       # process this line
-      self.process_line(line)
+      self._process_line(line)
       sys.stdout.write("~> ")
       sys.stdout.flush()
   
