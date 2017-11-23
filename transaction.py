@@ -11,7 +11,7 @@ class TransactionManager(object):
         """
         Initialize object, create regex for validating comments and operations
         """
-        self.REGEX_COMMENT = re.compile(r"(\/\/|===).+")
+        self.REGEX_COMMENT = re.compile(r"(\/\/|===).*")
         self.REGEX_OPERATIONS = re.compile(r"(begin\(T\d+\)|beginRO\(T\d+\)" \
             + "|R\(T\d+,x\d+\)|W\(T\d+,x\d+,\d+\)|dump\((\d+|x\d+)?\)|" \
             + "end\(T\d+\)|fail\(\d+\)|recover\(\d+\))")
