@@ -42,16 +42,16 @@ class Console(object):
         stripped = line.strip()
         # check for commands
         if stripped: # ignore empty line
-        if stripped == "help":
-            print(__doc__)
-        elif stripped == "exit":
-            sys.exit(0)
-        elif self.REGEX_LOAD_FILE.match(stripped):
-            filepath = stripped.split(" ")[1]
-            self._process_file(filepath)
-        else:
-            # let transaction manager to deal with it
-            self.TM.process(stripped)
+            if stripped == "help":
+                print(__doc__)
+            elif stripped == "exit":
+                sys.exit(0)
+            elif self.REGEX_LOAD_FILE.match(stripped):
+                filepath = stripped.split(" ")[1]
+                self._process_file(filepath)
+            else:
+                # let transaction manager to deal with it
+                self.TM.process(stripped)
 
     def _process_file(self, filepath):
         """
