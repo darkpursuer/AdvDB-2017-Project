@@ -20,22 +20,22 @@ def main(argv):
     except getopt.GetoptError:
         print(__doc__)
         sys.exit(2)
-        for opt, arg in opts:
-            if opt in ("-h", "--help"):
-                print(__doc__)
-                sys.exit(0)
-            elif opt == "-f":
-                infile = arg
-            else:
-                print(__doc__)
-                sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(__doc__)
+            sys.exit(0)
+        elif opt == "-f":
+            infile = arg
+        else:
+            print(__doc__)
+            sys.exit(2)
 
-                #initialize console
-                console = Console()
-                # start console
-                console.start(infile)
+    #initialize console
+    console = Console()
+    # start console
+    console.start(infile)
 
 
-                if __name__ == "__main__":
-                    # start main function
-                    main(sys.argv[1:])
+if __name__ == "__main__":
+    # start main function
+    main(sys.argv[1:])

@@ -34,50 +34,49 @@ class Console(object):
         self.REGEX_LOAD_FILE = re.compile(r"load [^\s]+")
         self.TM = TransactionManager()
 
-        def _process_line(self, line):
-            """
-            Check if this line is valid and process it.
-            """
-            # strip the line
-            stripped = line.strip()
-            # check for commands
-            if stripped: # ignore empty line
-            if stripped == "help":
-                print(__doc__)
-            elif stripped == "exit":
-                sys.exit(0)
-            elif self.REGEX_LOAD_FILE.match(stripped):
-                filepath = stripped.split(" ")[1]
-                self._process_file(filepath)
-            else:
-                # let transaction manager to deal with it
-                self.TM.process(stripped)
+    def _process_line(self, line):
+        """
+        Check if this line is valid and process it.
+        """
+        # strip the line
+        stripped = line.strip()
+        # check for commands
+        if stripped: # ignore empty line
+        if stripped == "help":
+            print(__doc__)
+        elif stripped == "exit":
+            sys.exit(0)
+        elif self.REGEX_LOAD_FILE.match(stripped):
+            filepath = stripped.split(" ")[1]
+            self._process_file(filepath)
+        else:
+            # let transaction manager to deal with it
+            self.TM.process(stripped)
 
-                def _process_file(self, filepath):
-                    """
-                    Load the file line by line and process each line\n
-                    - param:\n
-                    :filepath (String): The path of the file to be loaded
-                    """
-                    try:
-                        with open(filepath) as f:
-                            for line in f:
-                                self._process_line(line)
-                            except FileNotFoundError as e:
-                                print(e)
+    def _process_file(self, filepath):
+        """
+        Load the file line by line and process each line\n
+        - param:\n
+        :filepath (String): The path of the file to be loaded
+        """
+        try:
+            with open(filepath) as f:
+                for line in f:
+                    self._process_line(line)
+        except FileNotFoundError as e:
+            print(e)
 
-                                def start(self, infile):
-                                    """
-                                    Start the main loop
-                                    """
-                                    if infile:
-                                        self._process_file(infile)
-                                        # start main loop
-                                        sys.stdout.write("~> ")
-                                        sys.stdout.flush()
-                                        for line in sys.stdin:
-                                            # process this line
-                                            self._process_line(line)
-                                            sys.stdout.write("~> ")
-                                            sys.stdout.flush()
-                                            
+    def start(self, infile):
+        """
+        Start the main loop
+        """
+        if infile:
+            self._process_file(infile)
+        # start main loop
+        sys.stdout.write("~> ")
+        sys.stdout.flush()
+        for line in sys.stdin:
+            # process this line
+            self._process_line(line)
+            sys.stdout.write("~> ")
+            sys.stdout.flush()
