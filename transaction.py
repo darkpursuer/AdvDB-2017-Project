@@ -1,3 +1,14 @@
+"""
+Supported DB operations:
+- begin(T1) - begin of a normal transaction
+- beginRO(T3) - begin of a read-only transaction
+- R(T1, x4) - T1 wants to read x4
+- W(T1, x6,v) - T1 wants to write v to x6
+- dump() - get all variables from all sites
+- dump(i) - get all variables at site i
+- dump(xj) - get variable xj at all sites
+"""
+
 import sys, re
 
 
@@ -23,6 +34,7 @@ class TransactionManager(object):
         operations = self._validate(line)
         if operations is None:
             print("Line contains invalid operation!")
+            print(__doc__)
         else:
             self._execute_ops(operations)
 
