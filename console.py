@@ -13,6 +13,9 @@ Supported DB operations:
 - dump() - get all variables from all sites
 - dump(i) - get all variables at site i
 - dump(xj) - get variable xj at all sites
+- end(T1) - end a transaction T1
+- fail(1) - fail site 1
+- recover(1) - recover site 1
 """
 
 import sys, re
