@@ -4,8 +4,7 @@ Usage:
 """
 
 import sys, getopt
-from console import Console
-
+from console.main import Console
 
 def main(argv):
     """

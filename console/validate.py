@@ -13,36 +13,23 @@ Supported DB operations:
 """
 
 import sys, re
-from operation import *
+from console.operation import *
 
-
-class TransactionManager(object):
+class Validator(object):
     """
-    This module is the entry point of all
-    the transactions, it validate and process them.
+    Validate if operations are valid
     """
 
     def __init__(self):
         """
-        Initialize object, create regex for validating comments and operations
+        Initialize object, create regex for validating comments
         """
         self.REGEX_COMMENT = re.compile(r"(\/\/|===).*")
         self.REGEX_OPERATIONS = re.compile(r"(begin\(T\d+\)|beginRO\(T\d+\)" \
             + "|R\(T\d+,x\d+\)|W\(T\d+,x\d+,\d+\)|dump\((\d+|x\d+)?\)|" \
             + "end\(T\d+\)|fail\(\d+\)|recover\(\d+\))")
 
-    def process(self, line):
-        """
-        validate a line and process all the operations
-        """
-        operations = self._validate(line)
-        if operations is None:
-            print("Line contains invalid operation!")
-            print(__doc__)
-        else:
-            self._execute_ops(operations)
-
-    def _validate(self, line):
+    def validate(self, line):
         """
         Check if this line contains a sequence of
         valid operations.\n
@@ -61,12 +48,12 @@ class TransactionManager(object):
             operations = [(i.split("(")[0], \
                 "" if len(i.split("(")) == 1 else i.split("(")[1])
                 for i in no_whitespaces.split(")")]
-            return operations[:-1] # filter out empty strings
+            return self._parse_ops(operations[:-1]) # filter out empty strings
         else:
             # the operation is not valid, return None
             return None
 
-    def _execute_ops(self, operations):
+    def _parse_ops(self, operations):
         """
         convert a list of raw operation strings
         into objects and send them to the
@@ -98,4 +85,4 @@ class TransactionManager(object):
                 ops.append(OPFail("fail", int(o[1])))
             else: # recover
                 ops.append(OPRecover("recover", int(o[1])))
-        # TODO send them to db manager
+        return ops

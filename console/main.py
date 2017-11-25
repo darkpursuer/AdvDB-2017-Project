@@ -19,8 +19,7 @@ Supported DB operations:
 """
 
 import sys, re
-from transaction import TransactionManager
-
+from console.validate import Validator
 
 class Console(object):
     """
@@ -35,7 +34,7 @@ class Console(object):
     def __init__(self):
         """Initialize the object"""
         self.REGEX_LOAD_FILE = re.compile(r"load [^\s]+")
-        self.TM = TransactionManager()
+        self.VALIDATOR = Validator()
 
     def _process_line(self, line):
         """
@@ -53,8 +52,13 @@ class Console(object):
                 filepath = stripped.split(" ")[1]
                 self._process_file(filepath)
             else:
-                # let transaction manager to deal with it
-                self.TM.process(stripped)
+                # validate this Line
+                operations = self.VALIDATOR.validate(stripped)
+                if operations is None:
+                    print("Line contains invalid operation!")
+                    print(__doc__)
+                else:
+                    pass
 
     def _process_file(self, filepath):
         """
