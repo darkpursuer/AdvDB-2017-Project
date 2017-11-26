@@ -30,9 +30,29 @@ class DatabaseManager(object):
 
     def _release_locks(self, trans):
 
-    def fail(self, index):
 
-    def recover(self, index):
+    def fail(self, server):
+        """returns a list of transaction that should be abort"""
+        # set server offline
+        self.servers[server-1].fail()
+        # find out all the transactions that has lock on this server
+        trans = set()
+        # loop through 20 variables
+        for i in range(20):
+            add = False
+            if (i+1) % 2 == 0:
+                add = True
+            elif (i+2) % 10 == server:
+                add = True
+            if add:
+                if type(self.locks[i+1]) is str:
+                    trans.add(self.locks[i+1])
+                else:
+                    trans = trans.union(self.locks[i+1])
+        return trans
+
+    def recover(self, server):
+        self.servers[server-1].recover()
 
     def read(self, trans, var):
         """
