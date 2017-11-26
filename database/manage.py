@@ -16,17 +16,19 @@ class DatabaseManager(object):
         # indicates who is queued up to lock
         # which variables
         # int -> list()
-        self.lock_queue = dict()
+        self.lock_queue = [list() for i in range(10)]
         # a version table
         # keeps track of which RO transaction
         # is reading which version of a server
         # T name, server -> version
         self.version_table = dict()
-        # keep track of which transaction
-        # accessed which servers
-        # if server fails, then we need to abort
-        # those transactions
-        self.accessed = [set() for i in range(10)]
+        # buffer all the changes by transaction
+        # they will be commit when such transaction
+        # ends
+        # trans_name -> (var -> val)
+        self.changes = dict()
+
+    def _release_locks(self, trans):
 
     def fail(self, index):
 
@@ -59,14 +61,12 @@ class DatabaseManager(object):
             return self.servers[s_index].read(var, version=v)
         # check if there is a write lock on this variable
         if var in self.locks and type(self.locks[var]) is str:
-            # add the waiting list
-            self.lock_queue[var]
+            # add to the waiting list
+            self.lock_queue[var-1].append(trans)
             return -2 # wait
         # now we can read and return the value
         # but before that we need to:
-        # add to accessed
         # add a read lock to this item
-        self.accessed[s_index].add(trans)
         if var not in self.locks:
             self.locks[var] = set()
         self.locks[var].add(trans)
@@ -77,11 +77,27 @@ class DatabaseManager(object):
         """
         returns:
             0 : success
-            -1 : need abort
             -2 : need wait
+        not checking if servers are online or not
+        sine write operation commit the changes
+        when ending
         """
-
+        # check if there is a lock on this variable
+        if var in self.locks:
+            # add to waiting list
+            self.lock_queue[var-1].append(trans)
+            return -2
+        else:
+            # put a lock on this variable
+            self.locks[var] = trans
+            # store the change to the buffer
+            if trans not in self.changes:
+                self.changes[trans] = dict()
+            self.changes[trans][var] = val
+            return 0
 
     def dump():
 
     def end():
+
+    def abort():
