@@ -53,6 +53,14 @@ class DatabaseManager(object):
 
     def recover(self, server):
         self.servers[server-1].recover()
+        # sync even variables with other servers
+        for i in range(10):
+            if i != server-1 and self.servers[i].alive:
+                for j in range(10):
+                    self.servers[server-1].write((j+1) * 2, \
+                        self.servers[i].read((j+1) * 2))
+                break
+
 
     def read(self, trans, var):
         """
