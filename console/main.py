@@ -19,7 +19,7 @@ Supported DB operations:
 """
 
 import sys, re
-from console.validate import Validator
+from console.validate import validator
 
 class Console(object):
     """
@@ -34,7 +34,7 @@ class Console(object):
     def __init__(self):
         """Initialize the object"""
         self.REGEX_LOAD_FILE = re.compile(r"load [^\s]+")
-        self.VALIDATOR = Validator()
+        self.validator = validator()
 
     def _process_line(self, line):
         """
@@ -53,11 +53,12 @@ class Console(object):
                 self._process_file(filepath)
             else:
                 # validate this Line
-                operations = self.VALIDATOR.validate(stripped)
+                operations = self.validator.validate(stripped)
                 if operations is None:
                     print("Line contains invalid operation!")
                     print(__doc__)
                 else:
+                    # TODO call TM to process operations
                     pass
 
     def _process_file(self, filepath):
