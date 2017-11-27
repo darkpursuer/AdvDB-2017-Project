@@ -117,6 +117,11 @@ class TransactionManager(object):
                 elif trans.status == "BLOCKED":
                     trans.buffer.append(op)
             elif op.OP == "fail":
-                self.database.fail(op.SITE)
+                to_be_abort = self.database.fail(op.SITE)
+                for t in to_be_abort:
+                    r = self.database.abort(t)
+                    trans = self._find_transaction(t)
+                    trans.status = "ABORTED"
+                    self._resume(r)
             else: # recover
                 self.database.recover(op.SITE)

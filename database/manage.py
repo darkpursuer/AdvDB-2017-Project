@@ -279,7 +279,8 @@ class DatabaseManager(object):
             return []
         else:
             # clean changes
-            del self.changes[trans]
+            if trans in self.changes:
+                del self.changes[trans]
             # release lock
             return self._release_locks(trans)
 
