@@ -20,7 +20,7 @@ Supported DB operations:
 
 import sys, re, readline
 from console.validate import Validator
-from transaction.manage import TransactionManager
+from transaction.manager import TransactionManager
 
 class Console(object):
     """
