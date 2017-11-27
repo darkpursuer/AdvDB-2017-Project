@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """
-Usage:
+Usage: python start_console.py [-f <filepath>]
+-f : pre load script
 """
 
 import sys, getopt
