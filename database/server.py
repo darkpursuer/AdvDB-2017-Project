@@ -36,11 +36,11 @@ class Server(object):
     def write(self, variable, value, backup):
         if backup:
             self.old[self.version] = copy(self.variables)
-        self.variables[variable] = value
+        self.variables[variable-1] = value
         self.version += 1
 
     def read(self, variable, version=-1):
         if version == -1:
-            return self.variables[variable]
+            return self.variables[variable-1]
         else:
-            return self.old[version][variable]
+            return self.old[version][variable-1]

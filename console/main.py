@@ -20,6 +20,7 @@ Supported DB operations:
 
 import sys, re
 from console.validate import Validator
+from transaction.manage import TransactionManager
 
 class Console(object):
     """
@@ -35,6 +36,7 @@ class Console(object):
         """Initialize the object"""
         self.REGEX_LOAD_FILE = re.compile(r"load [^\s]+")
         self.validator = Validator()
+        self.manager = TransactionManager()
 
     def _process_line(self, line):
         """
@@ -58,8 +60,8 @@ class Console(object):
                     print("Line contains invalid operation!")
                     print(__doc__)
                 else:
-                    # TODO call TM to process operations
-                    pass
+                    # call TM to process operations
+                    self.manager.process(operations)
 
     def _process_file(self, filepath):
         """

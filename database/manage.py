@@ -64,7 +64,7 @@ class DatabaseManager(object):
                 add = True
             elif (i+2) % 10 == server:
                 add = True
-            if add:
+            if add and i+1 in self.locks:
                 if type(self.locks[i+1]) is str:
                     trans.add(self.locks[i+1])
                 else:
@@ -78,7 +78,7 @@ class DatabaseManager(object):
             if i != server-1 and self.servers[i].alive:
                 for j in range(10):
                     self.servers[server-1].write((j+1) * 2, \
-                        self.servers[i].read((j+1) * 2))
+                        self.servers[i].read((j+1) * 2), False)
                 break
 
     def read(self, trans, var):
@@ -152,14 +152,15 @@ class DatabaseManager(object):
         if server != -1:
             # print everything in this server
             if not self.servers[server-1].alive:
-                print("Server " + str(server) " is down!")
+                print("Server " + str(server) + " is down!")
             else:
-                print("Server " + str(server) ":")
+                print("Server " + str(server) + ":")
                 # print even variable first
                 for i in range(10):
                     print("x" + str((i+1)*2) + " -> " + str(self.servers[server-1].read((i+1)*2)))
                 # print the two odd variables
-                print("x" + str(server-1) + " -> " + str(self.servers[server-1].read(server-1)))
+                if server-1 != 0:
+                    print("x" + str(server-1) + " -> " + str(self.servers[server-1].read(server-1)))
                 print("x" + str(server+9) + " -> " + str(self.servers[server-1].read(server+9)))
         elif var != -1:
             # TODO
@@ -193,8 +194,10 @@ class DatabaseManager(object):
             # commit changes first
             # release locks
             # find out other trans that is waiting for this
-            patch = self.changes[trans]
-            del self.changes[trans]
+            patch = dict()
+            if trans in self.changes:
+                patch = self.changes[trans]
+                del self.changes[trans]
             # before commit, we need to check for server offlines
             offlines = set()
             for i in range(10):

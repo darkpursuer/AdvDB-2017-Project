@@ -60,7 +60,7 @@ class TransactionManager(object):
                 if trans == None:
                     print("Transaction not found: " + str(op.T))
                 elif trans.status == "RUNNING":
-                    rs = self.database.read(op.T, op.X)
+                    rs = self.database.read(op.T, int(op.X[1:]))
                     if rs == -1:
                         # abort
                         rl = self.database.abort(op.T)
@@ -72,7 +72,7 @@ class TransactionManager(object):
                         trans.buffer.append(op)
                     else:
                         # success
-                        trans.variables[op.X] = rs
+                        trans.variables[int(op.X[1:])] = rs
                         self._clean_deadlocks()
                 elif trans.status == "BLOCKED":
                     trans.buffer.append(op)
@@ -83,7 +83,7 @@ class TransactionManager(object):
                     print("Transaction not found: " + str(op.T))
                 elif trans.status == "RUNNING":
                     # send to database
-                    rs = self.database.write(op.T, op.X, op.V)
+                    rs = self.database.write(op.T, int(op.X[1:]), op.V)
                     if rs == -2:
                         # need to wait
                         trans.status = "BLOCKED"
@@ -101,14 +101,14 @@ class TransactionManager(object):
                     self.database.dump()
             elif op.OP == "end":
                 # check the status of this trans
-                trans = self._find_transaction(op.T)
+                trans = self._find_transaction(op.NAME)
                 if trans == None:
-                    print("Transaction not found: " + str(op.T))
+                    print("Transaction not found: " + str(op.NAME))
                 elif trans.status == "RUNNING":
                     # send to database
-                    rs = self.database.end(op.T)
+                    rs = self.database.end(op.NAME)
                     if rs is None: # abort
-                        rl = self.database.abort(op.T)
+                        rl = self.database.abort(op.NAME)
                         trans.status = "ABORTED"
                         self._resume(rl)
                     else:
