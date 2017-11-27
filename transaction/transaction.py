@@ -8,3 +8,4 @@ class Transaction(object):
         self.name = name # e.g. T1
         self.status = "RUNNING" # RUNNING, BLOCKED, COMMITED, ABORTED
         self.buffer = [] # pending operations
+        self.variables = dict() # read variables
