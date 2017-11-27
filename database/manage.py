@@ -102,7 +102,7 @@ class DatabaseManager(object):
                     s_index = i
                     break
         else: # odd
-            s_index = (var + 1) % 10
+            s_index = (var + 1) % 10 - 1
             if not self.servers[s_index].alive:
                 s_index = -1
         if s_index == -1:
