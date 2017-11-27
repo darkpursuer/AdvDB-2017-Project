@@ -1,6 +1,6 @@
 from transaction.transaction import Transaction
 from console.operation import *
-from database.manage import DatabaseManager
+from database.manager import DatabaseManager
 
 class TransactionManager(object):
 
