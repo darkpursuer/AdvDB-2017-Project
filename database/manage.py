@@ -35,15 +35,21 @@ class DatabaseManager(object):
         then return a list of trans that can be resume
         """
         released = set()
+        delete = set()
         for var in self.locks:
             if type(self.locks[var]) is str and self.locks[var] == trans:
-                del self.locks[var]
+                # if this is a write lock
+                delete.add(var)
                 released.add(var)
             elif trans in self.locks[var]:
+                # read lock
                 self.locks[var].remove(trans)
                 if len(self.locks[var]) == 0:
-                    del self.locks[var]
+                    delete.add(var)
                     released.add(var)
+        for var in delete:
+            del self.locks[var]
+        del delete
         # find out pending trans that can be resume
         resume = []
         for var in released:
@@ -167,7 +173,7 @@ class DatabaseManager(object):
             if var % 2 == 0: # even
                 for s in self.servers:
                     if s.alive:
-                        print("x" + str(var) + " -> " + str(s.read(var-1)))
+                        print("x" + str(var) + " -> " + str(s.read(var)))
                         break
         else:
             # print all values
@@ -176,12 +182,13 @@ class DatabaseManager(object):
                 if variable % 2 == 0: # even
                     for s in self.servers:
                         if s.alive:
-                            print("x" + str(variable) + " -> " + str(s.read(variable-1)))
+                            print("x" + str(variable) + " -> " + str(s.read(variable)))
                             break
                 else:
-                    if self.servers[(i+2)%10 - 1].alive:
+                    print((variable+1)%10 - 1)
+                    if self.servers[(variable+1)%10 - 1].alive:
                         print("x" + str(variable) + " -> " + \
-                            str(self.servers[(i+2)%10 - 1].read(variable-1)))
+                            str(self.servers[(variable+1)%10 - 1].read(variable)))
 
 
     def end(self, trans):
@@ -241,7 +248,14 @@ class DatabaseManager(object):
                             for (t, s) in self.version_table:
                                 if s == i+1 and self.version_table[t, s] == self.servers[i].version:
                                     need_backup = True
-                            s.write(var, patch[var], need_backup)
+                            self.servers[i].write(var, patch[var], need_backup)
+                else: # odd
+                    i = (var + 1) % 10 - 1
+                    need_backup = False
+                    for (t, s) in self.version_table:
+                        if s == i+1 and self.version_table[t, s] == self.servers[i].version:
+                            need_backup = True
+                    self.servers[i].write(var, patch[var], need_backup)
             # release locks
             return self._release_locks(trans)
 
