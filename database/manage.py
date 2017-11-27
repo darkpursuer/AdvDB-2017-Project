@@ -155,6 +155,8 @@ class DatabaseManager(object):
                 if trans in self.locks[var] and len(self.locks[var]) == 1:
                     # convert into write lock
                     self.locks[var] = trans
+                    if trans not in self.changes:
+                        self.changes[trans] = dict()
                     self.changes[trans][var] = val
                     return 0
                 else:
