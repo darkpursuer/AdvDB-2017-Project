@@ -113,10 +113,15 @@ class DatabaseManager(object):
             v = self.version_table[trans, s_index+1]
             return self.servers[s_index].read(var, version=v)
         # check if there is a write lock on this variable
-        if var in self.locks and type(self.locks[var]) is str:
+        # and also that's someone else's lock
+        if var in self.locks and type(self.locks[var]) is str and self.locks[var] != trans:
             # add to the waiting list
             self.lock_queue[var-1].append(trans)
             return -2 # wait
+        # if this trans already has a write lock on this item
+        # read from patch
+        if var in self.locks and type(self.locks[var]) is str and self.locks[var] == trans:
+            return self.changes[trans][var]
         # now we can read and return the value
         # but before that we need to:
         # add a read lock to this item
@@ -136,10 +141,26 @@ class DatabaseManager(object):
         when ending
         """
         # check if there is a lock on this variable
+        # and that's someone else's lock
         if var in self.locks:
-            # add to waiting list
-            self.lock_queue[var-1].append(trans)
-            return -2
+            if type(self.locks[var]) is str: # write lock
+                if self.locks[var] == trans:
+                    self.changes[trans][var] = val
+                    return 0
+                else:
+                    # add to waiting list
+                    self.lock_queue[var-1].append(trans)
+                    return -2
+            else: # read lock
+                if trans in self.locks[var] and len(self.locks[var]) == 1:
+                    # convert into write lock
+                    self.locks[var] = trans
+                    self.changes[trans][var] = val
+                    return 0
+                else:
+                    # add to waiting list
+                    self.lock_queue[var-1].append(trans)
+                    return -2
         else:
             # put a lock on this variable
             self.locks[var] = trans
