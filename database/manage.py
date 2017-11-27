@@ -28,6 +28,28 @@ class DatabaseManager(object):
         # trans_name -> (var -> val)
         self.changes = dict()
 
+    def _release_locks(self, trans):
+        """
+        release the locks related to this trans
+        then return a list of trans that can be resume
+        """
+        released = set()
+        for var in self.locks:
+            if type(self.locks[var]) is str and self.locks[var] == trans:
+                del self.locks[var]
+                released.add(var)
+            elif trans in self.locks[var]:
+                self.locks[var].remove(trans)
+                if len(self.locks[var]) == 0:
+                    del self.locks[var]
+                    released.add(var)
+        # find out pending trans that can be resume
+        resume = []
+        for var in released:
+            resume += self.lock_queue[var]
+            self.lock_queue[var] = list() # reset
+        return list(set(resume))
+
     def fail(self, server):
         """returns a list of transaction that should be abort"""
         # set server offline
@@ -125,8 +147,25 @@ class DatabaseManager(object):
         for i in range(10):
             self.version_table[trans, i+1] = self.servers[i].version
 
-    def dump():
-        pass
+    def dump(self, server=-1, var=-1):
+        if server != -1:
+            # print everything in this server
+            if not self.servers[server-1].alive:
+                print("Server " + str(server) " is down!")
+            else:
+                print("Server " + str(server) ":")
+                # print even variable first
+                for i in range(10):
+                    print("x" + str((i+1)*2) + " -> " + str(self.servers[server-1].read((i+1)*2)))
+                # print the two odd variables
+                print("x" + str(server-1) + " -> " + str(self.servers[server-1].read(server-1)))
+                print("x" + str(server+9) + " -> " + str(self.servers[server-1].read(server+9)))
+        elif var != -1:
+            # TODO
+            pass
+        else:
+            # TODO
+            pass
 
     def end(self, trans):
         """
@@ -185,26 +224,29 @@ class DatabaseManager(object):
                                     need_backup = True
                             s.write(var, patch[var], need_backup)
             # release locks
-            released = set()
-            for var in self.locks:
-                if type(self.locks[var]) is str and self.locks[var] == trans:
-                    del self.locks[var]
-                    released.add(var)
-                elif trans in self.locks[var]:
-                    self.locks[var].remove(trans)
-                    if len(self.locks[var]) == 0:
-                        del self.locks[var]
-                        released.add(var)
-            # find out pending trans that can be resume
-            resume = []
-            for var in released:
-                resume += self.lock_queue[var]
-                self.lock_queue[var] = list() # reset
-            return list(set(resume))
+            return self._release_locks(trans)
 
     def abort(self, trans):
         """
         abort the transaction
         clean data related to this transaction
+        then return a list of trans that should be resume
         """
-        
+        # check if it is a read-only
+        if (trans, 1) in self.version_table:
+            for i in range(10):
+                v = self.version_table[trans, i+1]
+                del self.version_table[trans, i+1]
+                delete = True
+                for (t, s) in self.version_table:
+                    if s == i+1 and v == self.version_table[t, s]:
+                        delete = False
+                        break
+                if delete:
+                    self.servers[i].old.remove(v)
+            return []
+        else:
+            # clean changes
+            del self.changes[trans]
+            # release lock
+            return self._release_locks(trans)
