@@ -9,3 +9,10 @@ class Transaction(object):
         self.status = "RUNNING" # RUNNING, BLOCKED, COMMITED, ABORTED
         self.buffer = [] # pending operations
         self.variables = dict() # read variables
+
+    def set_status(self, status):
+        if status in ("RUNNING", "BLOCKED", "COMMITED", "ABORTED"):
+            self.status = status
+
+    def get_status(self):
+        return self.status
