@@ -16,7 +16,7 @@ class TransactionManager(object):
 
     def _resume(self, transactions):
         for t in transactions:
-            trans = self._find_transaction(trans)
+            trans = self._find_transaction(t)
             trans.status = "RUNNING"
             ops = trans.buffer
             trans.buffer = list()
@@ -70,10 +70,10 @@ class TransactionManager(object):
                         # blocked
                         trans.status = "BLOCKED"
                         trans.buffer.append(op)
+                        self._clean_deadlocks()
                     else:
                         # success
                         trans.variables[int(op.X[1:])] = rs
-                        self._clean_deadlocks()
                 elif trans.status == "BLOCKED":
                     trans.buffer.append(op)
             elif op.OP == "W": # write
@@ -88,7 +88,6 @@ class TransactionManager(object):
                         # need to wait
                         trans.status = "BLOCKED"
                         trans.buffer.append(op)
-                    else: # success
                         self._clean_deadlocks()
                 elif trans.status == "BLOCKED":
                     trans.buffer.append(op)

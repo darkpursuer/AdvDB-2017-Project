@@ -185,11 +185,9 @@ class DatabaseManager(object):
                             print("x" + str(variable) + " -> " + str(s.read(variable)))
                             break
                 else:
-                    print((variable+1)%10 - 1)
                     if self.servers[(variable+1)%10 - 1].alive:
                         print("x" + str(variable) + " -> " + \
                             str(self.servers[(variable+1)%10 - 1].read(variable)))
-
 
     def end(self, trans):
         """
@@ -265,6 +263,7 @@ class DatabaseManager(object):
         clean data related to this transaction
         then return a list of trans that should be resume
         """
+        print("Aborting " + trans)
         # check if it is a read-only
         if (trans, 1) in self.version_table:
             for i in range(10):
@@ -301,7 +300,6 @@ class DatabaseManager(object):
                 break
         return loop
 
-
     def check_deadlocks(self):
         # generate a waiting table
         # trans_name -> list of transactions waiting for trans_name
@@ -313,7 +311,7 @@ class DatabaseManager(object):
                 if t not in waiting_table:
                     waiting_table[t] = set()
                 wl = self.lock_queue[var-1]
-                waiting_table[t].union(set(wl))
+                waiting_table[t] = waiting_table[t].union(set(wl))
             else:
                 # read locks
                 tl = self.locks[var] # owner list
@@ -321,7 +319,7 @@ class DatabaseManager(object):
                 for t in tl:
                     if t not in waiting_table:
                         waiting_table[t] = set()
-                    waiting_table[t].union(set(wl))
+                    waiting_table[t] = waiting_table[t].union(set(wl))
         # now we do DFS to check if there are loops
         deadlock_path = None
         for t in waiting_table:
