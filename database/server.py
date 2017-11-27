@@ -19,13 +19,6 @@ class Server(object):
         # previous versions
         # (version_number -> variables)
         self.old = dict()
-        # a flag to indicate if server need to
-        # store current data into old
-        # this should be set to True when
-        # a new read-only transaction occurs
-        # and set back to false if some updates happen
-        # to this server
-        self.store_old = False
 
     def recover(self):
         self.alive = True
@@ -40,8 +33,8 @@ class Server(object):
         if version in self.old:
             del self.old[version]
 
-    def write(self, variable, value):
-        if self.store_old:
+    def write(self, variable, value, backup):
+        if backup:
             self.old[self.version] = copy(self.variables)
         self.variables[variable] = value
         self.version += 1

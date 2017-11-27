@@ -28,9 +28,6 @@ class DatabaseManager(object):
         # trans_name -> (var -> val)
         self.changes = dict()
 
-    def _release_locks(self, trans):
-
-
     def fail(self, server):
         """returns a list of transaction that should be abort"""
         # set server offline
@@ -60,7 +57,6 @@ class DatabaseManager(object):
                     self.servers[server-1].write((j+1) * 2, \
                         self.servers[i].read((j+1) * 2))
                 break
-
 
     def read(self, trans, var):
         """
@@ -124,8 +120,91 @@ class DatabaseManager(object):
             self.changes[trans][var] = val
             return 0
 
+    def register_read_only(self, trans):
+        """register a read-only transaction"""
+        for i in range(10):
+            self.version_table[trans, i+1] = self.servers[i].version
+
     def dump():
+        pass
 
-    def end():
+    def end(self, trans):
+        """
+        commit a transaction and then end it
+        return a list of waiting transactions
+        that need to conitnue immediately
+        or None if this transaction need to be abort
+        """
+        # first check if this is a read-only
+        if (trans, 1) in self.version_table:
+            for i in range(10):
+                v = self.version_table[trans, i+1]
+                del self.version_table[trans, i+1]
+                delete_version = True
+                for (t, s) in self.version_table:
+                    if s == i+1 and v == self.version_table[t, s]:
+                        delete_version = False
+                        break
+                if delete_version:
+                    self.servers[i].clean(v)
+            return [] # empty list since read-only does not hold locks
+        else:
+            # a normal transaction
+            # commit changes first
+            # release locks
+            # find out other trans that is waiting for this
+            patch = self.changes[trans]
+            del self.changes[trans]
+            # before commit, we need to check for server offlines
+            offlines = set()
+            for i in range(10):
+                if not self.servers[i].alive:
+                    offlines.add(i+1)
+            # now check all the variables that we are writing to
+            need_abort = False
+            for var in patch:
+                if len(offlines) == 10:
+                    need_abort == True
+                    break
+                if (var + 1) % 10 in offlines:
+                    need_abort == True
+                    break
+            if need_abort:
+                return None
+            # commit changes
+            for var in patch:
+                if var % 2 == 0:
+                    for i in range(10):
+                        if self.servers[i].alive:
+                            # before store
+                            # we need to check if we need to
+                            # backup the current version
+                            need_backup = False
+                            for (t, s) in self.version_table:
+                                if s == i+1 and self.version_table[t, s] == self.servers[i].version:
+                                    need_backup = True
+                            s.write(var, patch[var], need_backup)
+            # release locks
+            released = set()
+            for var in self.locks:
+                if type(self.locks[var]) is str and self.locks[var] == trans:
+                    del self.locks[var]
+                    released.add(var)
+                elif trans in self.locks[var]:
+                    self.locks[var].remove(trans)
+                    if len(self.locks[var]) == 0:
+                        del self.locks[var]
+                        released.add(var)
+            # find out pending trans that can be resume
+            resume = []
+            for var in released:
+                resume += self.lock_queue[var]
+                self.lock_queue[var] = list() # reset
+            return list(set(resume))
 
-    def abort():
+    def abort(self, trans):
+        """
+        abort the transaction
+        clean data related to this transaction
+        """
+        
