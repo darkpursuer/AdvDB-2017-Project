@@ -83,10 +83,9 @@ class Console(object):
         if infile:
             self._process_file(infile)
         # start main loop
-        sys.stdout.write("~> ")
-        sys.stdout.flush()
-        for line in sys.stdin:
-            # process this line
-            self._process_line(line)
-            sys.stdout.write("~> ")
-            sys.stdout.flush()
+        while True:
+            try:
+                line = input("~> ")
+                self._process_line(line)
+            except EOFError:
+                continue
