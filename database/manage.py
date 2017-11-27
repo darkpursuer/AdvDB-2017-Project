@@ -1,4 +1,5 @@
 from database.server import Server
+from copy import copy
 
 class DatabaseManager(object):
     """DB manager is responsible for all transactions"""
@@ -46,8 +47,8 @@ class DatabaseManager(object):
         # find out pending trans that can be resume
         resume = []
         for var in released:
-            resume += self.lock_queue[var]
-            self.lock_queue[var] = list() # reset
+            resume += self.lock_queue[var-1]
+            self.lock_queue[var-1] = list() # reset
         return list(set(resume))
 
     def fail(self, server):
@@ -250,3 +251,49 @@ class DatabaseManager(object):
             del self.changes[trans]
             # release lock
             return self._release_locks(trans)
+
+    def _deadlock_DFS(self, waiting_table, path, trans):
+        p = copy(path)
+        if trans in path:
+            # deadlock found
+            p.add(trans)
+            return p
+        p.add(trans)
+        if trans not in waiting_table:
+            # the end of this path
+            return None # no loop in this path
+        loop = None
+        for nxt in waiting_table[trans]:
+            loop = self._deadlock_DFS(waiting_table, p, nxt)
+            if loop is not None:
+                break
+        return loop
+
+
+    def check_deadlocks(self):
+        # generate a waiting table
+        # trans_name -> list of transactions waiting for trans_name
+        waiting_table = dict()
+        for var in self.locks:
+            # check who locked this var
+            if type(self.locks[var]) is str:
+                t = self.locks[var] # the lock owner
+                if t not in waiting_table:
+                    waiting_table[t] = set()
+                wl = self.lock_queue[var-1]
+                waiting_table[t].union(set(wl))
+            else:
+                # read locks
+                tl = self.locks[var] # owner list
+                wl = self.lock_queue[var-1]
+                for t in tl:
+                    if t not in waiting_table:
+                        waiting_table[t] = set()
+                    waiting_table[t].union(set(wl))
+        # now we do DFS to check if there are loops
+        deadlock_path = None
+        for t in waiting_table:
+            deadlock_path = self._deadlock_DFS(waiting_table, set(), t)
+            if deadlock_path is not None:
+                break
+        return deadlock_path
