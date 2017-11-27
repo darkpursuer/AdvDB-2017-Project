@@ -7,6 +7,7 @@ class TransactionManager(object):
     def __init__(self):
         self.database = DatabaseManager()
         self.transactions = []
+        self.history = []
 
     def _find_transaction(self, trans):
         for t in self.transactions:
@@ -125,3 +126,10 @@ class TransactionManager(object):
                     self._resume(r)
             else: # recover
                 self.database.recover(op.SITE)
+            n_transactions = []
+            for t in self.transactions:
+                if t.status == "COMMITED" or t.status == "ABORTED":
+                    self.history.append(t)
+                else:
+                    n_transactions.append(t)
+            self.transactions = n_transactions
