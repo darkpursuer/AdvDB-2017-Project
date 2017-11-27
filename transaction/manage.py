@@ -96,7 +96,7 @@ class TransactionManager(object):
                 if op.SITE != -1:
                     self.database.dump(server=op.SITE)
                 elif op.VAR != "":
-                    self.database.dump(var=op.VAR)
+                    self.database.dump(var=int(op.VAR[1:]))
                 else:
                     self.database.dump()
             elif op.OP == "end":
