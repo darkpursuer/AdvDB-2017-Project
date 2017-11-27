@@ -40,7 +40,7 @@ class Server(object):
         self.version += 1
 
     def read(self, variable, version=-1):
-        if version == -1:
+        if version == -1 or version == self.version:
             return self.variables[variable-1]
         else:
             return self.old[version][variable-1]
