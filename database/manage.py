@@ -163,11 +163,26 @@ class DatabaseManager(object):
                     print("x" + str(server-1) + " -> " + str(self.servers[server-1].read(server-1)))
                 print("x" + str(server+9) + " -> " + str(self.servers[server-1].read(server+9)))
         elif var != -1:
-            # TODO
-            pass
+            # print this variable
+            if var % 2 == 0: # even
+                for s in self.servers:
+                    if s.alive:
+                        print("x" + str(var) + " -> " + str(s.read(var-1)))
+                        break
         else:
-            # TODO
-            pass
+            # print all values
+            for i in range(20):
+                variable = i + 1
+                if variable % 2 == 0: # even
+                    for s in self.servers:
+                        if s.alive:
+                            print("x" + str(variable) + " -> " + str(s.read(variable-1)))
+                            break
+                else:
+                    if self.servers[(i+2)%10 - 1].alive:
+                        print("x" + str(variable) + " -> " + \
+                            str(self.servers[(i+2)%10 - 1].read(variable-1)))
+
 
     def end(self, trans):
         """
