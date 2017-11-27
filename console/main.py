@@ -18,7 +18,7 @@ Supported DB operations:
 - recover(1) - recover site 1
 """
 
-import sys, re
+import sys, re, readline
 from console.validate import Validator
 from transaction.manage import TransactionManager
 
