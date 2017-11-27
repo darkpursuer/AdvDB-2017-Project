@@ -18,10 +18,13 @@ class TransactionManager(object):
     def _resume(self, transactions):
         for t in transactions:
             trans = self._find_transaction(t)
-            trans.status = "RUNNING"
-            ops = trans.buffer
-            trans.buffer = list()
-            self.process(ops)
+            if trans is not None:
+                # if it is none than it means this trans
+                # has already been aborted
+                trans.status = "RUNNING"
+                ops = trans.buffer
+                trans.buffer = list()
+                self.process(ops)
 
     def _clean_deadlocks(self):
         loop = self.database.check_deadlocks()

@@ -58,6 +58,7 @@ class Console(object):
                 operations = self.validator.validate(stripped)
                 if operations is None:
                     print("Line contains invalid operation!")
+                    print("line: ", stripped)
                     print(__doc__)
                 else:
                     # call TM to process operations
