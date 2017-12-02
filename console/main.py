@@ -41,6 +41,10 @@ class Console(object):
     def _process_line(self, line):
         """
         Check if this line is valid and process it.
+        Author: Taikun Guo
+        Date: 11/12/2017
+        - Param: 
+        :line (String): The command line needed to be processed
         """
         # strip the line
         stripped = line.strip()
@@ -66,8 +70,10 @@ class Console(object):
 
     def _process_file(self, filepath):
         """
-        Load the file line by line and process each line\n
-        - param:\n
+        Load the file line by line and process each line.
+        Author: Taikun Guo
+        Date: 11/12/2017
+        - Param:
         :filepath (String): The path of the file to be loaded
         """
         try:
@@ -80,6 +86,12 @@ class Console(object):
     def start(self, infile):
         """
         Start the main loop
+        Author: Taikun Guo
+        Date: 11/12/2017
+        - Param:
+        :infile (String): The path of the file to be loaded, 
+        if there is a in file, then process it, 
+        otherwise start a new command console.
         """
         if infile:
             self._process_file(infile)

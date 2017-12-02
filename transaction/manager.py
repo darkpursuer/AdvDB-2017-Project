@@ -10,12 +10,28 @@ class TransactionManager(object):
         self.history = []
 
     def _find_transaction(self, trans):
+        """
+        Find the transaction with its name.
+        Author: Yi Zhang
+        Date: 11/16/2017
+        - Param:
+        :trans (String): The name of the transaction
+        - Return:
+        The targeted transaction object, if not found, return None
+        """
         for t in self.transactions:
             if t.name == trans:
                 return t
         return None
 
     def _resume(self, transactions):
+        """
+        Resume the transactions, and continue processing their rest operations.
+        Author: Yi Zhang
+        Date: 11/17/2017
+        - Param:
+        :transactions (String[]): The list of name of those transactions which needed to be resumed
+        """
         for t in transactions:
             trans = self._find_transaction(t)
             if trans is not None:
@@ -27,6 +43,11 @@ class TransactionManager(object):
                 self.process(ops)
 
     def _clean_deadlocks(self):
+        """
+        Detect the deadlocks, and then abort the youngest transaction to keep going.
+        Author: Yi Zhang
+        Date: 11/18/2017
+        """
         loop = self.database.check_deadlocks()
         while loop is not None:
             # find the youngest
@@ -40,14 +61,26 @@ class TransactionManager(object):
             loop = self.database.check_deadlocks()
 
     def _print_trans(self, trans):
-        """print the variables stored in this transaction"""
+        """
+        Print the variables stored in this transaction.
+        Author: Yi Zhang
+        Date: 11/18/2017
+        - Param:
+        :trans (String): The name of transaction that needed to be print
+        """
         t = self._find_transaction(trans)
         print(str(t.name))
         for var in t.variables:
             print("x" + str(var) + " -> " + str(t.variables[var]))
 
     def process(self, ops):
-        """process a list of operations"""
+        """
+        Process a list of operations.
+        Author: Yi Zhang
+        Date: 11/18/2017
+        - Param:
+        :ops (Operation[]): The list of operations needed to be processed
+        """
         for op in ops:
             if op.OP == "begin":
                 # initialize transaction

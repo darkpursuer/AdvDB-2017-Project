@@ -33,6 +33,13 @@ class DatabaseManager(object):
         """
         release the locks related to this trans
         then return a list of trans that can be resume
+        Author: Taikun Guo
+        Date: 11/16/2017
+        - Param:
+        :trans (String): The name of this transaction
+        - Return:
+        The list of transactions needed to be resumed, 
+        which is waiting in the pending lock list.
         """
         released = set()
         delete = set()
@@ -58,7 +65,15 @@ class DatabaseManager(object):
         return list(set(resume))
 
     def fail(self, server):
-        """returns a list of transaction that should be abort"""
+        """
+        Fail a server
+        Author: Taikun Guo
+        Date: 11/16/2017
+        - Param:
+        :server (int): The server index
+        - Return:
+        The list of the transactions needed to be aborted because of the failed server.
+        """
         # set server offline
         self.servers[server-1].fail()
         # find out all the transactions that has lock on this server
@@ -78,6 +93,13 @@ class DatabaseManager(object):
         return trans
 
     def recover(self, server):
+        """
+        Recover a server, and synchronize the data
+        Author: Taikun Guo
+        Date: 11/16/2017
+        - Param:
+        :server (int): The server index
+        """
         self.servers[server-1].recover()
         # sync even variables with other servers
         for i in range(10):
@@ -89,7 +111,13 @@ class DatabaseManager(object):
 
     def read(self, trans, var):
         """
-        returns:
+        Read the value of a variable
+        Author: Taikun Guo
+        Date: 11/16/2017
+        - Param:
+        :trans (String): The transaction name
+        :var (int): The variable index
+        - Return:
             >= 0 : the value
             -1 : need abort
             -2 : need wait
@@ -133,7 +161,14 @@ class DatabaseManager(object):
 
     def write(self, trans, var, val):
         """
-        returns:
+        Write a value to a variable in this transaction
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :trans (String): The transaction name
+        :var (int): The variable index
+        :val (int): The value to be assigned
+        - Return:
             0 : success
             -2 : need wait
         not checking if servers are online or not
@@ -173,11 +208,25 @@ class DatabaseManager(object):
             return 0
 
     def register_read_only(self, trans):
-        """register a read-only transaction"""
+        """
+        Register a read-only transaction
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :trans (String): The transaction name
+        """
         for i in range(10):
             self.version_table[trans, i+1] = self.servers[i].version
 
     def dump(self, server=-1, var=-1):
+        """
+        Print all the variable in each server
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :server (int): The server index, if -1, then print all the servers
+        :var (int): The variable index, if -1, then print all the variables
+        """
         if server != -1:
             # print everything in this server
             if not self.servers[server-1].alive:
@@ -214,8 +263,13 @@ class DatabaseManager(object):
 
     def end(self, trans):
         """
-        commit a transaction and then end it
-        return a list of waiting transactions
+        Commit a transaction and then end it
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :trans (String): The transaction name
+        - Return:
+        a list of waiting transactions
         that need to conitnue immediately
         or None if this transaction need to be abort
         """
@@ -282,9 +336,13 @@ class DatabaseManager(object):
 
     def abort(self, trans):
         """
-        abort the transaction
-        clean data related to this transaction
-        then return a list of trans that should be resume
+        Abort the transaction, and clean data related to this transaction
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :trans (String): The transaction name
+        - Return:
+        A list of trans that should be resume
         """
         print("Aborting " + trans)
         # check if it is a read-only
@@ -308,6 +366,17 @@ class DatabaseManager(object):
             return self._release_locks(trans)
 
     def _deadlock_DFS(self, waiting_table, path, trans):
+        """
+        Check the deadlock with DFS algorithm
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Param:
+        :waiting_table (String[]): The waiting table containing the transactions
+        :path (String[]): The inter path in DFS
+        :trans (String): The name of transaction
+        - Return:
+        The list of transactions loop
+        """
         p = copy(path)
         if trans in path:
             # deadlock found
@@ -325,6 +394,13 @@ class DatabaseManager(object):
         return loop
 
     def check_deadlocks(self):
+        """
+        Check the deadlock
+        Author: Taikun Guo
+        Date: 11/17/2017
+        - Return:
+        The list of transactions loop
+        """
         # generate a waiting table
         # trans_name -> list of transactions waiting for trans_name
         waiting_table = dict()

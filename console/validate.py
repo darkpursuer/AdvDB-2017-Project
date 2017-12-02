@@ -33,6 +33,11 @@ class Validator(object):
         """
         Check if this line contains a sequence of
         valid operations.\n
+        Author: Taikun Guo
+        Date: 11/12/2017
+        - Param:
+        :line (String): The command line needed to be validated
+        - Return:
         If so, returns a list of operations\n
         If this line is a comment e.g. "//" or "===" then
         return an empty list\n
@@ -58,6 +63,12 @@ class Validator(object):
         convert a list of raw operation strings
         into objects and send them to the
         database manager.
+        Author: Taikun Guo
+        Date: 11/12/2017
+        - Param:
+        :operations (String[]): The operations
+        - Return:
+        The operations list
         """
         ops = []
         for o in operations:
