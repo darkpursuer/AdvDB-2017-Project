@@ -20,7 +20,7 @@ class Server(object):
         # the current version
         # here I create 20 slots, but not all the vars should be
         # stored here
-        self.variables = [0 for i in range(20)]
+        self.variables = [10 * i for i in range(20)]
         # previous versions
         # (version_number -> variables)
         self.old = dict()
