@@ -46,6 +46,10 @@ fail(1) # fail site 1
 recover(1) # recover site 1
 ```
 
+### Scripts
+You can write your DB command scripts and load it into our app.  
+Script should only contains all the DB commands or comments which starts with `//` or `===`.
+
 ### Work distributions
 - Design - Yi Zhang & Taikun Guo
 - Design Document - Yi Zhang
