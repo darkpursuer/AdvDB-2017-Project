@@ -38,7 +38,7 @@ class DatabaseManager(object):
         - Param:
         :trans (String): The name of this transaction
         - Return:
-        The list of transactions needed to be resumed, 
+        The list of transactions needed to be resumed,
         which is waiting in the pending lock list.
         """
         released = set()
@@ -420,6 +420,10 @@ class DatabaseManager(object):
                     if t not in waiting_table:
                         waiting_table[t] = set()
                     waiting_table[t] = waiting_table[t].union(set(wl))
+        for key in waiting_table:
+            # no one should wait for himself
+            if key in waiting_table[key]:
+                waiting_table[key].remove(key)
         # now we do DFS to check if there are loops
         deadlock_path = None
         for t in waiting_table:
